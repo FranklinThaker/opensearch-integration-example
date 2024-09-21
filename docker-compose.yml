@@ -1,0 +1,72 @@
+version: '3'
+services:
+  opensearch-test-node-1:
+    image: opensearchproject/opensearch:2.13.0
+    container_name: opensearch-test-node-1
+    environment:
+      - cluster.name=opensearch-test-cluster
+      - node.name=opensearch-test-node-1
+      - discovery.seed_hosts=opensearch-test-node-1,opensearch-test-node-2
+      - cluster.initial_cluster_manager_nodes=opensearch-test-node-1,opensearch-test-node-2
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "DISABLE_INSTALL_DEMO_CONFIG=true"
+      - "DISABLE_SECURITY_PLUGIN=true"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - opensearch-test-data1:/usr/share/opensearch/data
+    ports:
+      - 9200:9200
+      - 9600:9600
+    networks:
+      - opensearch-test-net
+
+  opensearch-test-node-2:
+    image: opensearchproject/opensearch:2.13.0
+    container_name: opensearch-test-node-2
+    environment:
+      - cluster.name=opensearch-test-cluster
+      - node.name=opensearch-test-node-2
+      - discovery.seed_hosts=opensearch-test-node-1,opensearch-test-node-2
+      - cluster.initial_cluster_manager_nodes=opensearch-test-node-1,opensearch-test-node-2
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "DISABLE_INSTALL_DEMO_CONFIG=true"
+      - "DISABLE_SECURITY_PLUGIN=true"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - opensearch-test-data2:/usr/share/opensearch/data
+    networks:
+      - opensearch-test-net
+
+  opensearch-test-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.13.0
+    container_name: opensearch-test-dashboards
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      - 'OPENSEARCH_HOSTS=["http://opensearch-test-node-1:9200","http://opensearch-test-node-2:9200"]'
+      - "DISABLE_SECURITY_DASHBOARDS_PLUGIN=true"
+    networks:
+      - opensearch-test-net
+
+volumes:
+  opensearch-test-data1:
+  opensearch-test-data2:
+
+networks:
+  opensearch-test-net:
